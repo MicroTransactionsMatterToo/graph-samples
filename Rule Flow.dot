@@ -1,0 +1,55 @@
+digraph ruleflow {
+    graph [compound=true
+    splines=true
+    ]
+    basesent [shape=box label="I am going to meet Alice"]
+    sentence_root [shape=box style=filled fillcolor=goldenrod label="Sentence"]
+    val1 [shape=text label="I (PRP)"]
+    chunk1 [shape=box style=filled fillcolor=dodgerblue label="Chunk 1"]
+    val2 [shape=text label="Alice (NNP)"]
+    chunkval1 [shape=text label="will (MD Future)"]
+    chunkval2 [shape=text label="meet (VB)"]
+    sentence_root -> {val1;val2;chunk1}
+    chunk1 -> {chunkval2;chunkval1}
+    basesent -> sentence_root
+    lemmatizer [shape=doublecircle color=orange]
+    {val1;chunkval1;chunkval2;val2} -> lemmatizer
+    // LEM output
+    iout [shape=box label="I"]
+    chunkbase [shape=box style=filled fillcolor=dodgerblue]
+    willout [shape=box label="go"]
+    meetout [shape=box label="meet"]
+    aliceout [shape=box label="Alice"]
+    // translation of modal
+    tense [shape=diamond label="Tense (Future) Prefix = Ka"]
+    tenseend [shape=house label="Ka tutaki"]
+    willtrans [shape=polygon sides=5 label="tutaki"]
+    meetpref [shape=diamond label="Object Prefix = ki"]
+    lemmatizer -> {iout;chunkbase;aliceout}
+    chunkbase -> {willout;meetout}
+    {willout} -> {tense} -> tenseend
+    meetout -> meetpref -> aliceout
+    meetout -> willtrans -> tenseend
+    // Translation of I
+    ipref [shape=diamond label="Prefix = none"]
+    itrans [shape=polygon sides=5 label="ahau"]
+    iend [shape=house label="ahau"]
+    iout -> {ipref;itrans} -> iend
+    // Translation of Alice
+    aliceobjpref [shape=diamond label="Object Preposition = ki"]
+    nnprefix [shape=diamond label="Prefix (Proper Nouns) = a"]
+    alicetrans [shape=polygon sides=5 label="Alice"]
+    alicend [shape=house label="a Alice"]
+    aliceout -> aliceobjpref
+    aliceout -> {alicetrans;nnprefix} -> alicend
+    // Final Ordering
+    order [shape=Mrecord label="<tense>tense|<verb>verb|<subject>subject|<prepos>preposition|<object>object"]
+    tenseend:w -> order:tense:n
+    tenseend:e -> order:verb:n
+    iend -> order:subject:n
+    aliceobjpref -> order:prepos:n
+    alicend -> order:object:n
+    // End Result
+    end [shape=box label="Ka tūtaki ahāu kī a Alice" style=filled fillcolor=green2]
+    order:s -> end
+}

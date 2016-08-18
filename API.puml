@@ -1,0 +1,115 @@
+@startuml
+
+actor Client
+box "Server Side" #lightgreen
+
+    participant Server
+    participant Library
+    database Database
+/' Notes '/
+
+note over Client
+    This actor represents the <color:green>Client</color>,
+    or the users interaction with the
+    <color:green>Server</color>
+end note
+
+note over Server
+    This actor represents the <color:green>Server</color>
+    activity
+end note
+
+note over Library
+    This actor represents the
+    <color:blue>TKWM</color> core library
+end note
+
+note over Database
+    This actor represents the
+    <color:green>Database</color> and it's activities
+end note
+
+/' End Notes '/
+
+== Connection ==
+    Client -> Server: Initial Connection
+    activate Server #ff9b00
+    Server -> Client: Confirmation of connection
+== Data Sent ==
+    Client ->o Server: JSON String Payload sent
+    Server --> Library: Create Translator instance
+    create entity Translator
+    activate Library
+    activate Database
+|||
+    Library -> Translator
+
+    /' Notes '/
+        note over Translator
+            This actor represents a new <color:purple>tkwm.Translator</color>
+        end note
+    /' End Notes '/
+
+    activate Translator
+|||
+    Translator ->o Database : Create new connection to DB
+    Database -> Translator : Send Data
+    Translator ->x Database : Close Connection
+|||
+    deactivate Database
+    deactivate Library
+|||
+
+    group Tagging
+
+        Server -> Translator : Send JSON to be tagged
+        /' Notes '/
+        note left
+            Represents the process
+            of tagging words
+        end note
+        /' End Notes '/
+        Translator -> Translator : Generate Tags
+
+    end
+
+    |||
+    |||
+== Questioning ==
+    loop "while questions needed"
+
+        Translator -> Translator : Generate needed questions
+        Translator -> Server : Send questions
+        deactivate Translator
+        Server -> Server : JSONify questions
+
+
+        Server -> Client : Send questions
+
+        ... Delay ...
+
+        Client -> Server : Reply with answers (JSON)
+
+    end
+
+    activate Translator
+
+    Server -> Translator : Signal Finished
+
+    group "Once all questions answered"
+
+        activate Translator
+        Translator -> Translator : Translation processed
+        ... Translation ...
+        Translator -> Server : Translation Sent
+        deactivate Translator
+        destroy Translator
+        Server -> Server : JSONify translation
+        Server -> Client : Send Translation
+    end
+== Close Connections ==
+    Server -x Client : Close Connection
+    Client -x Server : Close Connection
+
+
+@enduml
